@@ -63,12 +63,14 @@ function openLightbox(index) {
   lightboxEl.setAttribute('aria-hidden', 'false');
   document.body.classList.add('modal-open');
   closeButtonEl.focus();
+  history.replaceState(null, '', `#${currentIndex + 1}`);
 }
 
 function closeLightbox() {
   lightboxEl.classList.remove('open');
   lightboxEl.setAttribute('aria-hidden', 'true');
   document.body.classList.remove('modal-open');
+  history.replaceState(null, '', location.pathname + location.search);
 }
 
 function showNext() {
@@ -96,6 +98,15 @@ function injectJsonLd(imageList) {
   document.getElementById('json-ld').textContent = JSON.stringify(schema, null, 2);
 }
 
+function openLightboxFromHash() {
+  const hash = location.hash;
+  if (!hash) return;
+  const index = parseInt(hash.slice(1), 10);
+  if (!isNaN(index) && index >= 1 && index <= images.length) {
+    openLightbox(index - 1);
+  }
+}
+
 async function loadImages() {
   try {
     const response = await fetch('images.json', { cache: 'no-store' });
@@ -106,6 +117,7 @@ async function loadImages() {
     images = normaliseImages(data);
     renderGallery();
     injectJsonLd(images);
+    openLightboxFromHash();
   } catch (error) {
     console.error(error);
     statusEl.textContent = `Error: ${error.message}`;
@@ -154,6 +166,14 @@ document.addEventListener('keydown', event => {
     showNext();
   } else if (event.key === 'ArrowLeft') {
     showPrev();
+  }
+});
+
+window.addEventListener('popstate', () => {
+  if (location.hash) {
+    openLightboxFromHash();
+  } else {
+    closeLightbox();
   }
 });
 
