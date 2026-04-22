@@ -3,7 +3,24 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Oneirina Image Gallery</title>
+  <title>Oneirina Gallery</title>
+  <meta name="description" content="Fragments of a performance. Light, noise, and the space between them." />
+
+  <!-- Open Graph -->
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://pics.oneirina.com/" />
+  <meta property="og:title" content="Oneirina Gallery" />
+  <meta property="og:description" content="Fragments of a performance. Light, noise, and the space between them." />
+  <meta property="og:image" content="https://pics.oneirina.com/img/the-soundscape.png" />
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Oneirina Gallery" />
+  <meta name="twitter:description" content="Fragments of a performance. Light, noise, and the space between them." />
+  <meta name="twitter:image" content="https://pics.oneirina.com/img/the-soundscape.png" />
+
+  <!-- JSON-LD (populated dynamically after images.json loads) -->
+  <script id="json-ld" type="application/ld+json"></script>
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;700&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
   <style>
     :root {
@@ -361,6 +378,23 @@
       openLightbox(currentIndex - 1);
     }
 
+    function injectJsonLd(imageList) {
+      const baseUrl = 'https://pics.oneirina.com';
+      const schema = {
+        '@context': 'https://schema.org',
+        '@type': 'ImageGallery',
+        name: 'Oneirina Gallery',
+        description: 'Fragments of a performance. Light, noise, and the space between them.',
+        url: baseUrl + '/',
+        image: imageList.map(item => ({
+          '@type': 'ImageObject',
+          contentUrl: baseUrl + item.filename,
+          description: item.caption || ''
+        }))
+      };
+      document.getElementById('json-ld').textContent = JSON.stringify(schema, null, 2);
+    }
+
     async function loadImages() {
       try {
         const response = await fetch('images.json', { cache: 'no-store' });
@@ -370,6 +404,7 @@
         const data = await response.json();
         images = normaliseImages(data);
         renderGallery();
+        injectJsonLd(images);
       } catch (error) {
         console.error(error);
         statusEl.textContent = `Error: ${error.message}`;
