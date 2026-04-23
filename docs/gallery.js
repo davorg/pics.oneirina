@@ -63,7 +63,8 @@ function openLightbox(index) {
   lightboxEl.setAttribute('aria-hidden', 'false');
   document.body.classList.add('modal-open');
   closeButtonEl.focus();
-  history.replaceState(null, '', `#${currentIndex + 1}`);
+  const basename = item.filename.replace(/^.*\//, '').replace(/\.[^.]+$/, '');
+  history.replaceState(null, '', `#${basename}`);
 }
 
 function closeLightbox() {
@@ -101,9 +102,12 @@ function injectJsonLd(imageList) {
 function openLightboxFromHash() {
   const hash = location.hash;
   if (!hash) return;
-  const index = parseInt(hash.slice(1), 10);
-  if (!isNaN(index) && index >= 1 && index <= images.length) {
-    openLightbox(index - 1);
+  const basename = hash.slice(1);
+  const index = images.findIndex(item =>
+    item.filename.replace(/^.*\//, '').replace(/\.[^.]+$/, '') === basename
+  );
+  if (index !== -1) {
+    openLightbox(index);
   }
 }
 
